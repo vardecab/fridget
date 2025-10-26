@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- title -->
+    <title>Fridget</title>
+    <!-- favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❄️</text></svg>">
+    <!-- fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DynaPuff:wght@400..700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(to bottom right, #f0f8ff, #e6f2ff); /* Light blue gradient */
+        }
+        
+        .container {
+            background: linear-gradient(to top left, #ffffff, #f0f8ff); /* Subtle blue-ish gradient for container in light mode */
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            margin-top: 0;
+            font-family: DynaPuff, -apple-system;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #34495e;
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        /* Removed .radio-group and .radio-option styles */
+
+        /* New styles for input with icons */
+        .input-with-icons {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Space between input and icons */
+        }
+
+        .input-with-icons input[type="text"] {
+            flex-grow: 1;
+            margin-bottom: 0; /* Override general input margin if present */
+        }
+
+        .input-icon-btn {
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2em; /* Larger icon */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px; /* Fixed width for icon buttons */
+            height: 42px; /* Fixed height for icon buttons, adjusted to match input */
+            box-sizing: border-box; /* Include padding and border in width/height */
+            flex-shrink: 0; /* Prevent icons from shrinking */
+        }
+
+        .input-icon-btn.active {
+            background: #3498db; /* Highlight active button */
+            color: white;
+        }
+        
+        .input-icon-btn:hover:not(.active) {
+            background: #ccc;
+        }
+        
+        button {
+            background: linear-gradient(to right, #5DADE2, #3498db); /* Blue gradient matching snowflake aesthetic */
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            /* margin-top: 10px; */
+        }
+        
+        button:hover {
+            background: linear-gradient(to right, #3498db, #2980b9); /* Darker gradient on hover */
+        }
+        
+        .products-list {
+            margin-top: 30px;
+        }
+        
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px; /* Reduced vertical and horizontal padding */
+            border: 1px solid #eee;
+            border-radius: 5px;
+            margin-bottom: 6px; /* Reduced space between items */
+            background: #f9f9f9;
+            /* font-family: Archivo, -apple-system; */
+        }
+        
+        .product-info h3 {
+            margin: 0 0 3px 0; /* Reduced bottom margin */
+            color: #2c3e50;
+            font-size: 1em; /* Explicitly set a reasonable font size */
+        }
+        
+        .expiry-date, /* The actual date text */
+        .days-remaining { /* The 'expires in X days' text */
+            font-weight: 500;
+            font-size: 0.9em; /* Slightly smaller font for date/days text */
+            /* font-family: Audiowide, -apple-system; */
+        }
+
+        /* Specific color classes for the text content */
+        .text-red {
+            color: #e74c3c; /* Red for expiring very soon / expired */
+        }
+
+        .text-green {
+            color: #27ae60; /* Green for the expiry date when not critical */
+        }
+
+        .text-blue {
+            color: #3498db; /* Blue for days remaining when there's plenty of time */
+        }
+        
+        .expired {
+            background: rgba(255, 234, 234, 0.5); /* Less opaque red for expired items */
+            border-color: #e74c3c;
+        }
+        
+        .expiring-soon {
+            background: rgba(255, 243, 205, 0.5); /* Less opaque yellow */
+            border-color: #f39c12;
+        }
+        
+        .delete-btn {
+            background: none;
+            /* color: white; */ /* Removed this to allow emoji's native color */
+            border: none;
+            /* Changed padding to make it a square icon button */
+            padding: 0;
+            width: 36px; /* Fixed width */
+            height: 36px; /* Fixed height */
+            border-radius: 5px; /* Slightly larger border-radius for a softer look */
+            cursor: pointer;
+            font-size: 1.5em; /* Larger font size for the icon */
+            display: flex; /* Use flexbox to center the icon */
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0; /* Prevent it from shrinking */
+        }
+        
+        .delete-btn:hover {
+            background: #ccc; /* General hover for any delete button, overridden by specific ones */
+        }
+
+        .delete-btn.eaten-btn:hover {
+            background: #2ecc71; /* Green for eaten on hover */
+        }
+
+        .delete-btn.trash-btn:hover {
+            background: #e74c3c; /* Red for trash on hover */
+        }
+        
+        .date-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .date-input-group input {
+            flex: 1 1 auto; /* Allow input to grow and shrink, with initial auto size */
+            min-width: 0; /* Prevent content from overflowing flex item */
+        }
+        
+        .date-input-group span {
+            white-space: nowrap; /* Prevent the text from wrapping */
+            flex-shrink: 0;      /* Prevent the text from shrinking */
+        }
+        
+        .or-text {
+            text-align: center;
+            margin: 15px 0;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        .hidden {
+            display: none;
+        }
+
+        /* New styles for the stats section */
+        .stats-section {
+            margin-top: 30px;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .stats-section h2 {
+            color: #2c3e50; /* Match other headings */
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .stats-section p {
+            margin: 5px 0;
+            color: #34495e;
+            font-weight: 500;
+        }
+
+        .stats-section a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .stats-section a:hover {
+            text-decoration: underline;
+        }
+
+        /* Dark Mode Styles */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #1a1a1a;
+                color: #e0e0e0;
+            }
+            .container {
+                background: #2a2a2a;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            }
+            h1, h2, label {
+                color: #f0f0f0;
+            }
+            input, select {
+                background: #3a3a3a;
+                color: #f0f0f0;
+                border-color: #555;
+            }
+            input:focus, select:focus {
+                border-color: #5DADE2;
+            }
+            .input-icon-btn {
+                background: #4a4a4a;
+                color: #f0f0f0;
+            }
+            .input-icon-btn.active {
+                background: #5DADE2;
+                color: white;
+            }
+            .input-icon-btn:hover:not(.active) {
+                background: #666;
+            }
+            .product-item {
+                background: #333;
+                border-color: #555;
+            }
+            .product-info h3 {
+                color: #f0f0f0;
+            }
+            .expired {
+                background: rgba(110, 61, 61, 0.5); /* Darker, less opaque red for dark mode */
+                border-color: #a04e4e;
+            }
+            .expiring-soon {
+                background: rgba(122, 98, 42, 0.5); /* Darker, less opaque yellow/orange for dark mode */
+                border-color: #b08d44;
+            }
+            /* Dark mode colors for text */
+            .text-red {
+                color: #ff9187; /* Lighter red for dark mode */
+            }
+            .text-green {
+                color: #69eb9c; /* Lighter green for dark mode */
+            }
+            .text-blue {
+                color: #5DADE2; /* Lighter blue for dark mode */
+            }
+            .or-text {
+                color: #b0b0b0;
+            }
+            .stats-section p {
+                color: #e0e0e0;
+            }
+            .stats-section a {
+                color: #5DADE2;
+            }
+            .stats-section h2 {
+                color: #f0f0f0; /* Dark mode heading color */
+            }
+        }
+    </style>
+</head>
+<body color-scheme="light dark">
+    <div class="container">
+        <!-- <h1>❄️ Fridge Tracker</h1> -->
+        <h1>❄️ Fridget</h1>
+        
+        <form id="productForm">
+            <div class="form-group">
+                <!-- <label for="productName">Product Name</label> -->
+                <div class="input-with-icons">
+                    <input type="text" id="productName" placeholder="Jajka, indyk, jogurt, …" required>
+                    <button type="button" id="calendarIconBtn" class="input-icon-btn" title="Select expiry date">📅</button>
+                    <button type="button" id="daysIconBtn" class="input-icon-btn" title="Enter days until expiry">🔢</button>
+                </div>
+            </div>
+            
+            <!-- The following two divs will be toggled by the new icons -->
+            <div id="calendarInput" class="form-group hidden">
+                <label for="expiryDate">Expiry Date</label>
+                <input type="date" id="expiryDate"> <!-- 'required' removed here -->
+            </div>
+            
+            <div id="daysInput" class="form-group hidden">
+                <label for="daysUntilExpiry">Days until expiry</label>
+                <div class="date-input-group">
+                    <input type="number" id="daysUntilExpiry" min="1" placeholder="e.g., 7"> <!-- 'required' removed here -->
+                    <span>days from today</span>
+                </div>
+            </div>
+            
+            <button type="submit">Add Product</button>
+        </form>
+        
+        <div class="products-list">
+            <h2 id="productsListHeading" class="hidden">My Products</h2> <!-- Added 'hidden' class -->
+            <div id="productsContainer">
+                <!-- Products will be displayed here -->
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <h2>Stats</h2>
+            <div id="statsContainer">
+                <p>Eaten: <span id="eatenCountDisplay">0</span></p>
+                <p>Wasted: <span id="wastedCountDisplay">0</span></p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // DOM elements
+        const productForm = document.getElementById('productForm');
+        const productNameInput = document.getElementById('productName');
+        const expiryDateInput = document.getElementById('expiryDate');
+        const daysUntilExpiryInput = document.getElementById('daysUntilExpiry');
+        const calendarInput = document.getElementById('calendarInput');
+        const daysInput = document.getElementById('daysInput');
+        const productsContainer = document.getElementById('productsContainer');
+        // Removed dateMethodRadios
+        const calendarIconBtn = document.getElementById('calendarIconBtn'); // New element
+        const daysIconBtn = document.getElementById('daysIconBtn');     // New element
+        const productsListHeading = document.getElementById('productsListHeading'); // Re-added element
+        
+        // New Stats DOM elements
+        // const toggleStatsLink = document.getElementById('toggleStats'); // Removed
+        const statsDisplayContainer = document.getElementById('statsContainer');
+        const eatenCountSpan = document.getElementById('eatenCountDisplay');
+        const wastedCountSpan = document.getElementById('wastedCountDisplay');
+
+        // The base URL for our API (make sure this matches your server's address and port)
+        // If your server is on localhost:3000 and you open index-v1.html via file://,
+        // you might need to hardcode it to 'http://localhost:3000/api' for the fetch calls.
+        // If you serve index-v1.html via the express server (as set up in server.js),
+        // window.location.protocol + '//' + window.location.host + '/api' should work.
+        const API_BASE_URL = window.location.protocol + '//' + window.location.host + '/api';
+
+        let products = []; // Products will now be managed by the server
+
+        let activeDateMethod = null; // Track which date input method is currently active
+
+        // Stats counters - these will now be loaded from and saved to the server
+        let eatenCount = 0; // Initialize to 0, actual value fetched from server
+        let wastedCount = 0; // Initialize to 0, actual value fetched from server
+
+        // Function to update stats on the server
+        async function updateStatsOnServer(newEatenCount, newWastedCount) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/stats`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ eaten: newEatenCount, wasted: newWastedCount })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                // Optionally, process the response if the server sends back the updated stats
+                // const updatedStats = await response.json();
+                // console.log('Stats updated on server:', updatedStats);
+            } catch (error) {
+                console.error('Error updating stats on server:', error);
+                // alert('Could not update stats on the server. Please check the console for details.'); // Removed alert to prevent excessive popups
+            }
+        }
+
+        // Function to display stats (now fetches from server)
+        async function displayStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/stats`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const stats = await response.json();
+                eatenCount = stats.eaten; // Update global variable with server value
+                wastedCount = stats.wasted; // Update global variable with server value
+
+                eatenCountSpan.textContent = eatenCount;
+                wastedCountSpan.textContent = wastedCount;
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+                eatenCountSpan.textContent = 'Error'; // Display error message
+                wastedCountSpan.textContent = 'Error'; // Display error message
+            }
+        }
+
+        // Toggle stats visibility - REMOVED, as stats are always visible
+        /*
+        toggleStatsLink.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent page scroll to top
+            statsDisplayContainer.classList.toggle('hidden');
+            if (!statsDisplayContainer.classList.contains('hidden')) {
+                this.textContent = 'Hide Stats';
+                displayStats(); // Update stats when shown
+            } else {
+                this.textContent = 'Show Stats';
+            }
+        });
+        */
+
+        // Function to show/hide date input fields and set active button state
+        function showDateInputMethod(method) {
+            // Reset all states
+            calendarInput.classList.add('hidden');
+            daysInput.classList.add('hidden');
+            expiryDateInput.required = false;
+            daysUntilExpiryInput.required = false;
+            calendarIconBtn.classList.remove('active');
+            daysIconBtn.classList.remove('active');
+
+            activeDateMethod = method; // Update the active method
+
+            if (method === 'calendar') {
+                calendarInput.classList.remove('hidden');
+                expiryDateInput.required = true;
+                calendarIconBtn.classList.add('active');
+                expiryDateInput.focus(); // Optional: focus on the input field
+            } else if (method === 'days') {
+                daysInput.classList.remove('hidden');
+                daysUntilExpiryInput.required = true;
+                daysIconBtn.classList.add('active');
+                daysUntilExpiryInput.focus(); // Optional: focus on the input field
+            }
+            // If method is null or unrecognized, both remain hidden.
+        }
+        
+        // Call it once on load to set initial state (both hidden)
+        showDateInputMethod(null);
+
+        // Add click listeners to the new icon buttons
+        calendarIconBtn.addEventListener('click', () => showDateInputMethod('calendar'));
+        daysIconBtn.addEventListener('click', () => showDateInputMethod('days'));
+        
+        // Add product
+        productForm.addEventListener('submit', async function(e) { // Added 'async'
+            e.preventDefault();
+            
+            console.log('Form submitted'); // Debug log
+            
+            let productName = productNameInput.value.trim(); // Changed to 'let'
+            
+            // Validate product name
+            if (!productName) {
+                alert('Please enter a product name');
+                return;
+            }
+
+            // Capitalize the first letter of the product name
+            productName = productName.charAt(0).toUpperCase() + productName.slice(1);
+
+            // NEW: Validate if a date method has been selected
+            if (!activeDateMethod) {
+                alert('Please select an expiry date method (calendar or days from today) using the icons.');
+                return;
+            }
+            
+            let expiryDate;
+            
+            try {
+                if (activeDateMethod === 'calendar') { // Changed from checking radio button
+                    console.log('Using calendar method'); // Debug log
+                    
+                    // Check if date is selected
+                    if (!expiryDateInput.value) {
+                        alert('Please select an expiry date from the calendar');
+                        return;
+                    }
+                    
+                    console.log('Selected date:', expiryDateInput.value); // Debug log
+                    
+                    // Parse YYYY-MM-DD string into a local Date object at midnight
+                    const [year, month, day] = expiryDateInput.value.split('-').map(Number);
+                    expiryDate = new Date(year, month - 1, day);
+                    // No need to setHours(0,0,0,0) explicitly here, as this constructor defaults to local midnight.
+                    
+                    // Validate the date (original logic remains, but now applies to local date object)
+                    if (isNaN(expiryDate.getTime())) {
+                        alert('Please select a valid date');
+                        return;
+                    }
+                    
+                    console.log('Parsed date:', expiryDate); // Debug log
+                    
+                } else if (activeDateMethod === 'days') { // Changed from checking radio button
+                    console.log('Using days method'); // Debug log
+                    
+                    // Check if days input is valid
+                    const daysFromToday = parseInt(daysUntilExpiryInput.value);
+                    if (!daysUntilExpiryInput.value || isNaN(daysFromToday) || daysFromToday < 1) {
+                        alert('Please enter a valid number of days (1 or more)');
+                        return;
+                    }
+                    
+                    // Create today's date at local midnight
+                    expiryDate = new Date();
+                    expiryDate.setHours(0, 0, 0, 0); 
+                    expiryDate.setDate(expiryDate.getDate() + daysFromToday); // Add days
+                } else {
+                    // Fallback, should ideally be caught by the activeDateMethod check above
+                    alert('An unexpected error occurred with date selection. Please try again.');
+                    return;
+                }
+                
+                const productToAdd = { // Renamed from 'product' to avoid conflict later
+                    name: productName,
+                    // expiryDate will now consistently be a local midnight Date object,
+                    // which is then converted to its equivalent UTC ISO string.
+                    expiryDate: expiryDate.toISOString(),
+                    addedDate: new Date().toISOString()
+                };
+                
+                console.log('Attempting to add product:', productToAdd); // Debug log
+                
+                // POST to server
+                const response = await fetch(`${API_BASE_URL}/products`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(productToAdd)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const addedProduct = await response.json(); // Server will return the new product with an ID
+                products.push(addedProduct); // Add to local array for immediate display
+                displayProducts(); // Re-display products
+                
+                // Reset form
+                productForm.reset();
+                showDateInputMethod(null); // Reset to hide both date inputs and deactivate buttons
+                
+            } catch (error) {
+                console.error('Error adding product:', error);
+                alert('There was an error adding the product. Please try again.');
+            }
+        });
+        
+        // Attempt to open native calendar picker on input field click
+        expiryDateInput.addEventListener('click', function() {
+            if (this.showPicker) {
+                this.showPicker();
+            } else {
+                console.warn('Browser does not support showPicker() for date input. Calendar might only open via icon or other native means.');
+            }
+        });
+
+        // Display products
+        async function displayProducts() { // Added 'async'
+            productsContainer.innerHTML = '';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/products`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                products = await response.json(); // Get products from the server
+
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                productsContainer.innerHTML = '<p style="text-align: center; color: #e74c3c;">Error loading products. Is the server running?</p>';
+                productsListHeading.textContent = `My Products (Error)`; // Re-added error state for count
+                return;
+            }
+
+            productsListHeading.textContent = `My Products (${products.length})`; // Re-added product count here
+            
+            if (products.length === 0) {
+                productsContainer.innerHTML = '<p style="text-align: center; color: #7f8c8d; font-style: italic;">No products added yet. Add your first item above!</p>';
+                return;
+            }
+            
+            // Sort by expiry date (soonest first)
+            products.sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
+            
+            products.forEach(product => {
+                const productElement = createProductElement(product);
+                productsContainer.appendChild(productElement);
+            });
+        }
+        
+        // Create product element
+        function createProductElement(product) {
+            // Helper function to get a Date object representing the local midnight of any given date
+            // This normalizes dates to the start of their calendar day in the local timezone.
+            function getLocalMidnight(date) {
+                return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            }
+
+            const div = document.createElement('div');
+            
+            // 1. Get today's local midnight
+            const todayLocalMidnight = getLocalMidnight(new Date());
+
+            // 2. Get the expiry date's local midnight
+            // When `new Date()` parses an ISO string (e.g., "2023-10-27T07:00:00.000Z"),
+            // it creates a Date object whose internal time is UTC.
+            // However, its `getFullYear()`, `getMonth()`, `getDate()` methods will return values
+            // based on the *local timezone* interpretation of that UTC time point.
+            // By then passing this to `getLocalMidnight`, we reliably get the
+            // local midnight of the *calendar day* the expiry falls on in the user's timezone.
+            const expiryDateFromISO = new Date(product.expiryDate);
+            const expiryLocalMidnight = getLocalMidnight(expiryDateFromISO);
+
+            // 3. Calculate the difference in milliseconds between the two local midnight dates
+            const diffMilliseconds = expiryLocalMidnight.getTime() - todayLocalMidnight.getTime();
+
+            // 4. Convert milliseconds to full days using Math.round.
+            // Math.round is used here as it's more robust than Math.ceil for day differences
+            // when values might be slightly negative due to floating point inaccuracies,
+            // ensuring 0 for same-day, 1 for next day, -1 for previous day etc.
+            const daysRemaining = Math.round(diffMilliseconds / (1000 * 60 * 60 * 24));
+            
+            console.log(`Product: ${product.name}, Expiry ISO: ${product.expiryDate}, Today Midnight: ${todayLocalMidnight.toISOString()}, Expiry Midnight: ${expiryLocalMidnight.toISOString()}, Days Remaining: ${daysRemaining}`);
+
+            let statusClass = '';
+            let statusText = '';
+            // let dateColorClass = ''; // This variable is not currently used in the HTML template
+            let daysColorClass = ''; // Color class for the 'days remaining' text
+            
+            // Apply statusClass and set base statusText based on calculated daysRemaining
+            if (daysRemaining < 0) {
+                statusClass = 'expired';
+                statusText = `Expired ${Math.abs(daysRemaining)} day${Math.abs(daysRemaining) !== 1 ? 's' : ''} ago`;
+            } else if (daysRemaining === 0) { 
+                statusClass = 'expired'; // Expires today, so it's critical
+                statusText = 'Expires today';
+            } else if (daysRemaining === 1) { 
+                statusClass = 'expiring-soon'; // Expires tomorrow, also critical
+                statusText = 'Expires tomorrow';
+            } else {
+                // For 2 days or more remaining
+                statusText = `Expires in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}`;
+                // The 'expiring-soon' class applies up to 2 days out (i.e., when daysRemaining is 2)
+                if (daysRemaining <= 2) {
+                    statusClass = 'expiring-soon';
+                }
+            }
+
+            // Apply text coloring based on the new logic for daysRemaining
+            if (daysRemaining < 3) { // Less than 3 days remaining (expired, today, tomorrow, or 2 days)
+                daysColorClass = 'text-red';
+            } else { // 3 days or more remaining
+                daysColorClass = 'text-green'; // Plenty of time, so green
+            }
+            
+            div.className = `product-item ${statusClass}`;
+            div.innerHTML = `
+                <div class="product-info">
+                    <h3>${product.name}</h3>
+                    
+                    <div class="days-remaining ${daysColorClass}">${statusText}</div>
+                </div>
+                <div style="display: flex; gap: 5px;">
+                    <button class="delete-btn eaten-btn" onclick="deleteProduct(${product.id}, 'eaten')" title="Mark as Eaten">✅</button>
+                    <button class="delete-btn trash-btn" onclick="deleteProduct(${product.id}, 'wasted')" title="Mark as Wasted (Expired)">🗑️</button>
+                </div>
+            `;
+            
+            return div;
+        }
+        
+        // Delete product
+        async function deleteProduct(id, removalType) { // Modified to accept removalType
+            let confirmationMessage = '';
+            if (removalType === 'eaten') {
+                confirmationMessage = 'Are you sure you want to mark this product as eaten and remove it?';
+            } else if (removalType === 'wasted') {
+                confirmationMessage = 'Are you sure you want to mark this product as wasted/expired and remove it?';
+            } else {
+                confirmationMessage = 'Are you sure you want to delete this product?'; // Fallback
+            }
+
+            if (confirm(confirmationMessage)) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    // Increment stats based on removalType
+                    if (removalType === 'eaten') {
+                        eatenCount++;
+                    } else if (removalType === 'wasted') {
+                        wastedCount++;
+                    }
+                    // Save updated stats to the server
+                    await updateStatsOnServer(eatenCount, wastedCount);
+
+                    // Update local products array and re-display
+                    products = products.filter(product => product.id !== id);
+                    displayProducts();
+                    await displayStats(); // Fetch and display updated stats from the server
+
+                } catch (error) {
+                    console.error('Error deleting product or updating stats:', error);
+                    alert('There was an error deleting the product or updating stats. Please try again. Is the server running?');
+                }
+            }
+        }
+        
+        // Removed saveProducts function as data is now saved by the server
+        /*
+        function saveProducts() {
+            try {
+                localStorage.setItem('fridgeProducts', JSON.stringify(products));
+            } catch (error) {
+                console.error('Error saving to localStorage:', error);
+                alert('Error saving data. Please check your browser storage settings.');
+            }
+        }
+        */
+        
+        // Initialize
+        displayProducts(); // Now fetches products from the server
+        displayStats();    // Fetch and display initial stats from the server
+        
+        // Set minimum date to today for calendar picker - REMOVED FOR TESTING PAST DATES
+        // const today = new Date().toISOString().split('T')[0];
+        // expiryDateInput.setAttribute('min', today);
+        
+        console.log('Fridge Tracker initialized');
+    </script>
+</body>
+</html>
