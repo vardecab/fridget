@@ -24,6 +24,7 @@
 
 ## Release History
 
+- 0.2.1: Fixed "too wide on the right" issue for the date input field.
 - 0.2: Changed icon.
 - 0.1: Initial, fully functioning release.
 
