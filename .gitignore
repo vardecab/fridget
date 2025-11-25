@@ -4,3 +4,4 @@ db.json
 package.json
 package-lock.json
 server.sh
+.DS_Store

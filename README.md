@@ -24,6 +24,7 @@
 
 ## Release History
 
+- 0.2: Changed icon.
 - 0.1: Initial, fully functioning release.
 
 <!-- <details> -->
