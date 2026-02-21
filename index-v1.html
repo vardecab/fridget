@@ -201,6 +201,34 @@
         .delete-btn.trash-btn:hover {
             background: #e74c3c; /* Red for trash on hover */
         }
+
+        .delete-btn.edit-btn:hover {
+            background: #3498db; /* Blue for edit on hover */
+        }
+
+        /* Inline edit form */
+        .product-item.edit-mode {
+            flex-wrap: wrap;
+        }
+        .product-item .edit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            margin-top: 8px;
+        }
+        .product-item .edit-form input {
+            padding: 8px;
+            font-size: 14px;
+        }
+        .product-item .edit-form .edit-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .product-item .edit-form .edit-buttons button {
+            flex: 1;
+            padding: 8px;
+        }
         
         .date-input-group {
             display: flex;
@@ -721,13 +749,14 @@
             }
             
             div.className = `product-item ${statusClass}`;
+            div.dataset.productId = product.id;
             div.innerHTML = `
                 <div class="product-info">
                     <h3>${product.name}</h3>
-                    
                     <div class="days-remaining ${daysColorClass}">${statusText}</div>
                 </div>
                 <div style="display: flex; gap: 5px;">
+                    <button class="delete-btn edit-btn" onclick="editProduct(${product.id})" title="Edit">✏️</button>
                     <button class="delete-btn eaten-btn" onclick="deleteProduct(${product.id}, 'eaten')" title="Mark as Eaten">✅</button>
                     <button class="delete-btn trash-btn" onclick="deleteProduct(${product.id}, 'wasted')" title="Mark as Wasted (Expired)">🗑️</button>
                 </div>
@@ -736,6 +765,65 @@
             return div;
         }
         
+        // Edit product - show inline form
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+            const row = document.querySelector(`.product-item[data-product-id="${id}"]`);
+            if (!row) return;
+
+            const expiryDate = new Date(product.expiryDate);
+            const expiryStr = expiryDate.getFullYear() + '-' + String(expiryDate.getMonth() + 1).padStart(2, '0') + '-' + String(expiryDate.getDate()).padStart(2, '0');
+
+            row.classList.add('edit-mode');
+            row.innerHTML = `
+                <div class="product-info">
+                    <h3>Editing: ${product.name}</h3>
+                </div>
+                <form class="edit-form" onsubmit="saveProductEdit(event, ${id})">
+                    <input type="text" name="name" value="${product.name.replace(/"/g, '&quot;')}" placeholder="Product name" required>
+                    <input type="date" name="expiryDate" value="${expiryStr}" required>
+                    <div class="edit-buttons">
+                        <button type="submit">Save</button>
+                        <button type="button" onclick="cancelEdit(${id})">Cancel</button>
+                    </div>
+                </form>
+            `;
+        }
+
+        // Save edited product
+        async function saveProductEdit(e, id) {
+            e.preventDefault();
+            const form = e.target;
+            const name = form.name.value.trim();
+            const expiryDateInput = form.expiryDate.value;
+            if (!name || !expiryDateInput) return;
+
+            const [y, m, d] = expiryDateInput.split('-').map(Number);
+            const expiryDate = new Date(y, m - 1, d).toISOString();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name.charAt(0).toUpperCase() + name.slice(1), expiryDate })
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const updated = await response.json();
+                const idx = products.findIndex(p => p.id === id);
+                if (idx >= 0) products[idx] = updated;
+                displayProducts();
+            } catch (err) {
+                console.error('Error updating product:', err);
+                alert('Could not update product. Is the server running?');
+            }
+        }
+
+        // Cancel edit
+        function cancelEdit(id) {
+            displayProducts();
+        }
+
         // Delete product
         async function deleteProduct(id, removalType) { // Modified to accept removalType
             let confirmationMessage = '';

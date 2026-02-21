@@ -24,6 +24,7 @@
 
 ## Release History
 
+- 0.3: Added "edit" option to modify an item (name, date) on the list.
 - 0.2.1: Fixed "too wide on the right" issue for the date input field.
 - 0.2: Changed icon.
 - 0.1: Initial, fully functioning release.

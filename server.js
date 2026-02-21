@@ -55,6 +55,21 @@ app.post('/api/products', (req, res) => {
     res.status(201).json(newProduct);
 });
 
+// PUT (update) a product
+app.put('/api/products/:id', (req, res) => {
+    const db = readDb();
+    const productId = parseInt(req.params.id);
+    const product = db.products.find(p => p.id === productId);
+    if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+    }
+    const { name, expiryDate } = req.body;
+    if (name !== undefined) product.name = name;
+    if (expiryDate !== undefined) product.expiryDate = expiryDate;
+    writeDb(db);
+    res.json(product);
+});
+
 // DELETE a product
 app.delete('/api/products/:id', (req, res) => {
     const db = readDb();
